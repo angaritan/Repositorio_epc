@@ -1,0 +1,909 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE sqlMap
+ PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="DATA">
+
+
+	<!--Definicion de alias de reconocimiento de Objeto al cual mapear los resultados 
+		de los querys y updates -->
+	<typeAlias alias="bo" type="co.com.comcel.vo.BillingOffer" />
+	<typeAlias alias="boRev" type="co.com.comcel.vo.BORevision" />
+	<typeAlias alias="plan" type="co.com.comcel.vo.Plan" />
+	<typeAlias alias="paquete" type="co.com.comcel.vo.Paquete" />
+	<typeAlias alias="priceGenerico" type="co.com.comcel.vo.PriceGenerico" />
+	<typeAlias alias="tt" type="co.com.comcel.vo.TablaTraduccion" />
+	<typeAlias alias="paqueteLDI" type="co.com.comcel.vo.PaqueteLDI" />
+	<typeAlias alias="attrPaqLDI" type="co.com.comcel.vo.AttrPaqLDI" />
+	<typeAlias alias="serviceFilterList" type="co.com.comcel.vo.ServiceFilterList" />
+	<typeAlias alias="serviceFilterToCharge" type="co.com.comcel.vo.ServiceFilterToCharge" />
+	<typeAlias alias="ofertasDemanda" type="co.com.comcel.vo.OfertasDemanda" />
+	<typeAlias alias="recurringCharge" type="co.com.comcel.vo.RecurringCharge" />
+	<typeAlias alias="usageCharge" type="co.com.comcel.vo.UsageCharge" />
+	<typeAlias alias="oneTimeCharge" type="co.com.comcel.vo.OneTimeCharge" />
+	<typeAlias alias="value" type="co.com.comcel.vo.Value" />
+	<typeAlias alias="scomp" type="co.com.comcel.vo.servicio_comp" />
+	<typeAlias alias="vp" type="co.com.comcel.vo.ValuesPrepago" />
+	<typeAlias alias="segCal" type="co.com.comcel.vo.TOTALES_SEG_CAL" />
+	<typeAlias alias="NOA" type="co.com.comcel.vo.NewOffersAmdocs" />
+	<typeAlias alias="matsim" type="co.com.comcel.vo.MaterialSim" />
+	<typeAlias alias="comp" type="co.com.comcel.vo.Componentes" />
+	<typeAlias alias="CompTTBO" type = "co.com.comcel.vo.CompararTTS_BO"></typeAlias> 
+	
+
+	<select id="DATA.getPlanesMigracion" resultClass="plan">
+		SELECT *
+		FROM
+		PLANES_MIGRACION P
+		WHERE P.MIGRACION IS NULL
+		AND (p.obsdesactivacion IS NULL OR p.obsdesactivacion LIKE 'N/A')
+	</select>
+
+	<select id="DATA.getPlanesMigracionPanama" resultClass="plan">
+		SELECT *
+		FROM PLANES_MIGRACION_PANAMA
+		WHERE MIGRACION IS NULL
+	</select>
+
+	<select id="DATA.getPaquetesMigracion" resultClass="paquete">
+		SELECT *
+		FROM PAQUETES_MIGRACION N
+		WHERE N.MIGRACION IS NULL
+		AND N.TIPO_ALLOWANCE
+		NOT LIKE '%LDI%'
+		ORDER by N.SPCODE ASC
+	</select>
+
+	<select id="DATA.getPaquetesEspeciales" resultClass="paquete">
+		SELECT
+		nombre as nvo_nombre_paq, description as descripcion, 'NA' as
+		nombre_aprov, 'NA' as qa_servicio, charge_code, impuesto, cfm
+		FROM
+		PAQUETES_ESPECIALES
+	</select>
+
+	<select id="DATA.getOfertasDemanda" resultClass="ofertasDemanda">
+		SELECT NOMBRE,
+		ID, USAGE_CHARGE, ONE_TIME_CHARGE, RECURRING_CHARGE, tipo_oferta,
+		tipo,
+		v.bo_tipoallow, v.bo_descripcion, v.bo_type, v.bo_prioridad, v.bo_producttype,
+		v.bo_maxnumbfnf,
+		v.bo_pre2posind, v.bo_vdaysnextnumchange, v.bo_vdurtillrenew, v.bo_voiceservdur,
+		BO_MAXNUM_FNFV, BO_VDURTILLRENEW_FNFV, BO_VDAYSNEXTNUMCHAN_FNFV,
+		BO_VOICESERVDUR_FNFV,
+		BO_MAXNUM_FNFVSMS, BO_VDURTILLRENEW_FNFSMS, BO_VDAYSNEXTNUMCHAN_FNFSMS,
+		BO_VOICESERVDUR_FNFSMS, V.BO_SALEEXPIRATIONDATE,
+		v.bo_effectiveday, v.bo_saleffectiveday, v.bo_level, v.bo_currency
+		FROM OFERTAS_DEMANDA v
+		WHERE tipo_oferta like 'Demanda'
+		AND tipo ='Postpago'
+	</select>
+
+	<select id="DATA.getOfertasDemandaSus" resultClass="ofertasDemanda">
+		 SELECT id, nombre, usage_charge, recurring_charge, one_time_charge, tipo_oferta,
+			    tipo, v.bo_tipoallow, v.bo_descripcion, v.bo_type, v.bo_prioridad, v.bo_producttype,
+			    v.bo_maxnumbfnf,  v.bo_pre2posind, v.bo_vdaysnextnumchange, v.bo_vdurtillrenew,
+			    v.bo_voiceservdur, BO_MAXNUM_FNFV, BO_VDURTILLRENEW_FNFV, BO_VDAYSNEXTNUMCHAN_FNFV,
+			    BO_VOICESERVDUR_FNFV, BO_MAXNUM_FNFVSMS, BO_VDURTILLRENEW_FNFSMS, BO_VDAYSNEXTNUMCHAN_FNFSMS,
+			    BO_VOICESERVDUR_FNFSMS, V.BO_SALEEXPIRATIONDATE,
+			    v.bo_effectiveday, v.bo_saleffectiveday, v.bo_level, v.bo_currency
+		FROM OFERTAS_DEMANDA v
+		WHERE tipo_oferta like 'Especial' and TIPO = 'Postpago'
+	</select>
+
+	<select id="DATA.getOfertasPrepago" resultClass="ofertasDemanda">
+		SELECT id,
+		nombre, usage_charge, recurring_charge, one_time_charge, tipo,
+		tipo_oferta, v.spcode,
+		v.bo_tipoallow, v.bo_descripcion, v.bo_type, v.bo_prioridad, v.bo_producttype,
+		v.bo_maxnumbfnf,
+		v.bo_pre2posind, v.bo_vdaysnextnumchange, v.bo_vdurtillrenew, v.bo_voiceservdur,
+		BO_MAXNUM_FNFV, BO_VDURTILLRENEW_FNFV, BO_VDAYSNEXTNUMCHAN_FNFV,
+		BO_VOICESERVDUR_FNFV,
+		BO_MAXNUM_FNFVSMS, BO_VDURTILLRENEW_FNFSMS, BO_VDAYSNEXTNUMCHAN_FNFSMS,
+		BO_VOICESERVDUR_FNFSMS, V.BO_SALEEXPIRATIONDATE,
+		v.bo_effectiveday, v.bo_saleffectiveday, v.bo_level, v.bo_currency
+		FROM OFERTAS_DEMANDA v WHERE one_time_charge != 0
+		AND tipo = 'Prepago' and tipo_oferta = 'Especial'
+	</select>
+	<select id="DATA.getOfertasDemPrep" resultClass="ofertasDemanda">
+		SELECT id,
+		nombre, usage_charge, recurring_charge, one_time_charge, tipo,
+		tipo_oferta, v.spcode,
+		v.bo_tipoallow, v.bo_descripcion, v.bo_type, v.bo_prioridad, v.bo_producttype,
+		v.bo_maxnumbfnf,
+		v.bo_pre2posind, v.bo_vdaysnextnumchange, v.bo_vdurtillrenew, v.bo_voiceservdur,
+		BO_MAXNUM_FNFV, BO_VDURTILLRENEW_FNFV, BO_VDAYSNEXTNUMCHAN_FNFV,
+		BO_VOICESERVDUR_FNFV,
+		BO_MAXNUM_FNFVSMS, BO_VDURTILLRENEW_FNFSMS, BO_VDAYSNEXTNUMCHAN_FNFSMS,
+		BO_VOICESERVDUR_FNFSMS,  V.BO_SALEEXPIRATIONDATE,
+		v.bo_effectiveday, v.bo_saleffectiveday, v.bo_level, v.bo_currency
+		FROM OFERTAS_DEMANDA V
+		WHERE one_time_charge != 0
+		AND tipo = 'Prepago' and tipo_oferta =
+		'Demanda'
+	</select>
+
+	<select id="DATA.getPaquetesMigracionPanama" resultClass="paquete">
+		SELECT
+		*
+		FROM PAQUETES_MIGRACION_PANAMA
+	</select>
+
+	<select id="DATA.getPriceGenerico" resultClass="java.lang.String"
+		parameterClass="java.lang.String">
+		SELECT distinct DES_PRICE
+		FROM PRICE_GENERICOS
+		WHERE ID_PRICE = #VALUE#
+	</select>
+
+	<select id="DATA.getPriceGenericoGPRS_PL" resultClass="java.lang.String"
+		parameterClass="java.lang.String">
+		SELECT DES_PRICE
+		FROM PRICE_GENERICOS
+		WHERE ID_PRICE = #VALUE#
+		AND TIPO_PRICE = 'GPRSPL'
+	</select>
+
+	<select id="DATA.getPriceGenericoGPRS_PQ" resultClass="java.lang.String"
+		parameterClass="java.lang.String">
+		SELECT DES_PRICE
+		FROM PRICE_GENERICOS
+		WHERE ID_PRICE = #VALUE#
+		AND TIPO_PRICE = 'GPRSPQ'
+	</select>
+
+	<select id="DATA.getPriceGenericoBB_PL" resultClass="java.lang.String"
+		parameterClass="java.lang.String">
+		SELECT DES_PRICE
+		FROM PRICE_GENERICOS
+		WHERE ID_PRICE = #VALUE#
+		AND (TIPO_PRICE = 'BBPL' OR
+		TIPO_PRICE='GPRSPL')
+	</select>
+
+	<select id="DATA.getPriceGenericoBB_PQ" resultClass="java.lang.String"
+		parameterClass="java.lang.String">
+		SELECT DES_PRICE
+		FROM PRICE_GENERICOS
+		WHERE ID_PRICE = #VALUE#
+		AND TIPO_PRICE = 'BBPQ'
+	</select>
+	<select id="DATA.getPricesGenericos" resultClass="priceGenerico"
+		parameterClass="java.lang.String">
+		SELECT *
+		FROM PRICE_GENERICOS
+	</select>
+
+	<select id="DATA.getPriceGenericoPanama" resultClass="java.lang.String"
+		parameterClass="java.lang.String">
+		SELECT DES_PRICE
+		FROM PRICE_GENERICOS_PANAMA
+		WHERE ID_PRICE = #VALUE#
+	</select>
+
+	<select id="DATA.getPricesGenericosPanama" resultClass="priceGenerico"
+		parameterClass="java.lang.String">
+		SELECT *
+		FROM PRICE_GENERICOS_PANAMA
+		WHERE TIPO_PRICE NOT IN('ELEG','MMS')
+	</select>
+
+	<select id="DATA.getPlanesPrepago" resultClass="plan">
+		select s.* , f.elegidos_fnf, f.elegidos_bfnf, f.valor_onnet as
+		valor_onneteleg, f.valor_offnet as valor_offneteleg,
+		f.valor_fijo as valor_fijoeleg, f.caract_elegfnf, f.caract_elegbfnf,
+		f.ffsmsmaxnumele_on,f.ffsmsdur, f.ffsmsdurtillre,
+		f.ffsmsdaynextnch, f.ffvzmaxnumele_td, f.ffvzdur, f.ffvzdurtillre, f.ffvzdaynextnch,
+		f.BFNFVDURTD, f.BFNFVDURTILLRE, f.BFNFVDAYNEXTNCH, dbms_lob.substr( s.descripcion, 4000, 1 )  as descripciont
+		from prepago_eleg f right outer join planes_migracion s
+		on f.planprepago = s.planprepago where s.migracion = 'P'
+	</select>
+	<select id="DATA.getPlanesPrepagoInc" resultClass="plan">
+		select s.* , f.elegidos_fnf, f.elegidos_bfnf, f.valor_onnet as
+		valor_onneteleg, f.valor_offnet as valor_offneteleg,
+		f.valor_fijo as valor_fijoeleg, f.caract_elegfnf, f.caract_elegbfnf,
+		f.ffsmsmaxnumele_on,f.ffsmsdur, f.ffsmsdurtillre,
+		f.ffsmsdaynextnch, f.ffvzmaxnumele_td, f.ffvzdur, f.ffvzdurtillre, f.ffvzdaynextnch,
+		f.BFNFVDURTD, f.BFNFVDURTILLRE, f.BFNFVDAYNEXTNCH, dbms_lob.substr( s.descripcion, 4000, 1 )  as descripciont
+		from prepago_eleg f right outer join planes_migracion_inc  s
+		on f.planprepago = s.planprepago where s.migracion = 'P'
+	</select>
+	<select id="DATA.getValuesPrepago" resultClass="vp">
+		SELECT *
+		FROM
+		VALUES_PREPAGO P
+	</select>
+
+	<insert id="DATA.insertBO" parameterClass="bo">
+		INSERT INTO BOFFER
+		(DESC_BO,TMCODE,SPCODE,TIPO_PLAN,TIPO_PAQ,NUM_ELEG, PLAN_BASICO,
+		ATRMAP_TOPO,TIPO_PLAN_FAM, FECHA_INICIO, FECHA_VENTA)
+		VALUES(#name#,$tmcode$,$plan.SPCODE$,'$plan.CARACT_PLAN$','$paquete.TIPO_ALLOWANCE$',
+		'$paquete.ALLOWANCE$', '$plan_basico$',
+		'$ATRMAP_TOPO$','$plan.TIPO_PLAN$','$plan.FECHA_INICIO$',
+		'$plan.FECHA_VENTA$')
+	</insert>
+
+	<insert id="DATA.insertBOSuspension" parameterClass="bo">
+		INSERT INTO
+		BOFFER (DESC_BO,TMCODE,TIPO_PLAN, NUM_ELEG, PLAN_BASICO) VALUES
+		(#name#,$tmcode$,'$plan.CARACT_PLAN$','$paquete.ALLOWANCE$',
+		'$plan_basico$')
+	</insert>
+	<!-- <insert id="DATA.insertBOVIP" parameterClass="bo"> INSERT INTO BOFFER 
+		(DESC_BO,TMCODE,SPCODE,TIPO_PLAN, NUM_ELEG, PLAN_BASICO) VALUES (#name#,$tmcode$,$plan.SPCODE$,'$plan.CARACT_PLAN$','$paquete.ALLOWANCE$', 
+		'$plan_basico$') </insert> - -->
+	<insert id="DATA.insertBOPaq" parameterClass="bo">
+		INSERT INTO BOFFER
+		(DESC_BO,SPCODE,TIPO_PAQ, NUM_ELEG, ATRMAP_TOPO,SNCODE, FECHA_VENTA)
+		VALUES (#name#,$paquete.SPCODE$,'$paquete.TIPO_ALLOWANCE$',
+		'$paquete.ALLOWANCE$',
+		'$ATRMAP_TOPO$','$paquete.SNCODE$','$saleEffectiveDate$')
+	</insert>
+	<!--<insert id="DATA.insertBOPaq" parameterClass="bo"> INSERT INTO BOFFER 
+		(DESC_BO,SPCODE,TIPO_PAQ, NUM_ELEG) VALUES (#name#,$paquete.SPCODE$,'$paquete.TIPO_ALLOWANCE$', 
+		'$paquete.ALLOWANCE$') </insert> -->
+	<insert id="DATA.insertBOPaqLDI" parameterClass="bo">
+		INSERT INTO
+		BOFFER (DESC_BO,SPCODE,TIPO_PAQ) VALUES
+		(#name#,$paqueteLDI.SPCODE$,'LDI')
+	</insert>
+
+	<!-- INSERCION DE DATOS PARA TABLA DE REVISION BO GENERADAS -->
+	<insert id="DATA.insertBOREVPaq" parameterClass="boRev">
+		INSERT INTO
+		SEGUIMIENTO_BO(SPCODE,SNCODE,NOMBRE_BO,NOMBRE_PRICE,NOMBRE_PRIT,
+		ROLE_PRIT, TIPO_PRIT, VERSION) VALUES
+		('$SPCODE$','$SNCODE$','$NOMBRE_BO$','$NOMBRE_PRICE$','$NOMBRE_PRIT$','$ROLE_PRIT$','$TIPO_PRIT$','$VERSION$'
+		)
+	</insert>
+	<insert id="DATA.insertBOREVPlan" parameterClass="boRev">
+		INSERT INTO
+		SEGUIMIENTO_BO(TMCODE, SPCODE,NOMBRE_BO,NOMBRE_PRICE,NOMBRE_PRIT,
+		ROLE_PRIT, TIPO_PRIT, VERSION) VALUES
+		('$TMCODE$','$SPCODE$','$NOMBRE_BO$','$NOMBRE_PRICE$','$NOMBRE_PRIT$','$ROLE_PRIT$','$TIPO_PRIT$','$VERSION$'
+		)
+	</insert>
+	<delete id="DATA.truncateBO">
+		TRUNCATE TABLE BOFFER
+	</delete>
+
+	<delete id="DATA.truncateTTS">
+		TRUNCATE TABLE TTS
+	</delete>
+	
+	<update id="DATA.updateBO_numEleg">
+		UPDATE BOFFER
+		SET num_eleg = '0'
+		WHERE num_eleg is null
+	</update>
+
+	<update id="DATA.updateBO_spCode">
+		UPDATE BOFFER
+		SET SPCODE = NULL
+		WHERE TIPO_PLAN IN ('Suspension', 'Dummy')
+	</update>
+
+
+	<insert id="DATA.insertBOPanama" parameterClass="bo">
+		INSERT INTO
+		BOFFER_PANAMA VALUES
+		(#name#,$tmcode$,$plan.SPCODE$,'$plan.CARACT_PLAN$','$paquete.TIPO_ALLOWANCE$')
+	</insert>
+
+	<insert id="DATA.insertBOPaqPanama" parameterClass="bo">
+		INSERT INTO
+		BOFFER_PANAMA (DESC_BO,SPCODE,TIPO_PAQ) VALUES
+		(#name#,$paquete.SPCODE$,'$paquete.TIPO_ALLOWANCE$')
+	</insert>
+
+	<delete id="DATA.truncateBOPanama">
+		TRUNCATE TABLE BOFFER_PANAMA
+	</delete>
+
+	<select id="DATA.getInfoTT1" resultClass="tt">
+		SELECT DISTINCT
+		A.TMCODE, A.SPCODE, B.SNCODE, '' AS PLAN, C.NOMBRE_PAQUETE,
+		D.DESCRIPCION, A.DESC_BO
+		FROM BOFFER A, PLAN_PAQ_SERV B,
+		PAQUETES_MIGRACION C, SERVICIOS D
+		WHERE A.SPCODE= B.SPCODE AND A.SPCODE
+		= C.SPCODE AND B.SNCODE=D.SNCODE
+	</select>
+
+	<select id="DATA.getInfoComp" resultClass="scomp">
+		SELECT * FROM
+		SERV_COMPONENTES
+	</select>
+
+	<select id="DATA.getInfoTTPanama1" resultClass="tt">
+		SELECT DISTINCT
+		A.TMCODE, A.SPCODE, B.SNCODE, '' AS PLAN, C.NOMBRE_PAQUETE,
+		D.DESCRIPCION, A.DESC_BO
+		FROM BOFFER_PANAMA A, PLAN_PAQ_SERV_PANAMA B,
+		PAQUETES_MIGRACION_PANAMA C, SERVICIOS_PANAMA D
+		WHERE A.SPCODE=
+		B.SPCODE AND A.SPCODE = C.SPCODE AND B.SNCODE=D.SNCODE
+	</select>
+
+	<!-- <select id="DATA.getInfoTT" resultClass="tt"> SELECT A.TMCODE, A.SPCODE, 
+		B.SNCODE, C.PLAN, C.PAQUETE, D.DESCRIPCION, A.DESC_BO, CASE WHEN C.CODIGO_ELEG 
+		IS NULL THEN '' ELSE C.CODIGO_ELEG END AS CARACT_ELEG FROM BOFFER A, PLAN_PAQ_SERV 
+		B, PLANES_MIGRACION C, SERVICIOS D WHERE B.SNCODE = 3013 AND A.TMCODE (+) 
+		= B.TMCODE AND (B.TMCODE = C.TMCODE) AND A.SPCODE = C.SPCODE AND B.SNCODE 
+		= D.SNCODE AND A.Plan_Basico = 1 UNION SELECT DISTINCT A.TMCODE, A.SPCODE, 
+		B.SNCODE, '' AS PLAN, C.NOMBRE_PAQUETE, D.DESCRIPCION, A.DESC_BO, '' AS CARACT_ELEG 
+		FROM BOFFER A, PLAN_PAQ_SERV B, PAQUETES_MIGRACION C, SERVICIOS D WHERE A.SPCODE= 
+		B.SPCODE AND A.SPCODE = C.SPCODE AND B.SNCODE=D.SNCODE UNION SELECT p.tmcode, 
+		p.spcode, '3013' as sncode, p.plan , p.paquete, 'Servicio Telefonia GSM' 
+		as descripcion, 'Plan - Clientes Facturas Abiertas' as desc_bo, '' AS CARACT_ELEG 
+		FROM planes_migracion p WHERE p.migracion IS NOT NULL </select> -->
+
+	<select id="DATA.getInfoTT" resultClass="tt">
+		SELECT DISTINCT A.TMCODE, A.SPCODE, B.SNCODE, C.PLAN, C.PAQUETE,
+		D.DESCRIPCION, A.DESC_BO,
+		CASE WHEN C.Caract_Eleg IS NULL THEN '' ELSE C.Caract_Eleg END AS
+		caract_eleg, C.CFM, a.fecha_inicio, a.fecha_venta
+		FROM BOFFER A, PLAN_PAQ_SERV B, PLANES_MIGRACION C, SERVICIOS D
+		WHERE A.PLAN_BASICO = 1 AND C.MIGRACION IS NULL
+		AND A.TMCODE = B.TMCODE AND A.SPCODE = B.SPCODE AND A.TMCODE = C.TMCODE
+		AND B.SNCODE = D.SNCODE AND B.SNCODE = 3013
+		UNION
+		SELECT DISTINCT m.tmcode, b.spcode, T.sncode, b.plan, b.paquete,
+		Q.descripcion, k.desc_bo, b.caract_eleg, M.CFM, k.fecha_inicio,
+		k.fecha_venta
+		FROM (SELECT * FROM planes_migracion WHERE migracion IS NULL AND
+		obsdesactivacion IS NULL) b ,
+		planes_migracion m, boffer k, PLAN_PAQ_SERV T, SERVICIOS Q
+		WHERE m.obsdesactivacion IS NOT NULL AND m.obsdesactivacion =
+		TO_CHAR(b.tmcode)
+		AND k.tmcode = b.tmcode AND (k.desc_bo NOT LIKE '%- Promo12x12%' AND
+		k.desc_bo NOT LIKE '%- PromoOnnet%')
+		AND T.TMCODE = B.TMCODE AND T.SPCODE = b.SPCODE AND T.SNCODE =3013 AND
+		T.SNCODE = Q.SNCODE
+		UNION
+		SELECT DISTINCT case when A.TMCODE is null then 0 else A.TMCODE end as
+		TMCODE, A.SPCODE, TO_CHAR(c.SNCODE), '' AS PLAN, C.NOMBRE_PAQUETE,
+		D.DESCRIPCION, A.DESC_BO, '' AS CARACT_ELEG, C.CFM, a.fecha_inicio,
+		a.fecha_inicio as fecha_venta
+		FROM BOFFER A, PAQUETES_MIGRACION C, SERVICIOS D
+		WHERE A.SPCODE= C.SPCODE AND a.SNCODE=C.SNCODE AND A.SNCODE =D.SNCODE
+		AND A.DESC_BO = C.NVO_NOMBRE_PAQ
+		AND A.SNCODE IS NOT NULL
+		UNION
+		SELECT p.tmcode, p.spcode, '3013' as sncode, p.plan ,
+		p.paquete, 'Servicio Telefonia GSM' as descripcion,
+		'Clientes Facturas Abiertas' as desc_bo, '' AS CARACT_ELEG, P.CFM,
+		p.fecha_inicio, p.fecha_venta
+		FROM planes_migracion p
+		WHERE ( p.migracion like 'X' OR p.migracion like 'Y')
+
+	</select>
+	<select id="DATA.getInfoTTPre" resultClass="tt">
+		SELECT DISTINCT A.TMCODE, A.SPCODE, '3013' as SNCODE, C.PLAN, C.PAQUETE,
+    		'Servicio Telefonia GSM' as DESCRIPCION, A.DESC_BO,
+    	CASE WHEN C.Caract_Eleg IS NULL THEN '' ELSE C.Caract_Eleg END AS
+    		caract_eleg,
+    		C.CFM, a.fecha_inicio, a.fecha_venta
+    	FROM BOFFER A, PLANES_MIGRACION C
+    	WHERE A.PLAN_BASICO = 1 AND C.MIGRACION like 'P%'
+    	AND A.TMCODE = C.TMCODE AND A.SPCODE = C.SPCODE
+    	AND A.SPCODE NOT LIKE 0  
+    	order by a.tmcode, a.spcode asc 
+	</select>
+
+	<select id="DATA.getTMCODE_NoMigrados" resultClass="java.lang.Integer">
+		SELECT tmcode
+		FROM planes_migracion
+		WHERE migracion IS NOT NULL
+
+	</select>
+
+	<select id="DATA.getInfoTTPanama" resultClass="tt">
+		SELECT A.TMCODE,
+		A.SPCODE, B.SNCODE, C.PLAN, C.PAQUETE, D.DESCRIPCION, A.DESC_BO,
+		C.CARACT_ELEG
+		FROM BOFFER_PANAMA A, PLAN_PAQ_SERV_PANAMA B,
+		PLANES_MIGRACION_PANAMA C, SERVICIOS_PANAMA D
+		WHERE B.SNCODE = 1 AND A.TMCODE (+) = B.TMCODE
+		AND (B.TMCODE = C.TMCODE)
+		AND A.SPCODE = C.SPCODE AND B.SNCODE = D.SNCODE
+		AND (A.DESC_BO LIKE '% -
+		PromoOnnet' OR C.CARACT_ELEG != '0')
+		UNION
+		SELECT DISTINCT A.TMCODE,
+		A.SPCODE, B.SNCODE, '' AS PLAN, C.NOMBRE_PAQUETE, D.DESCRIPCION,
+		A.DESC_BO, '' AS CARACT_ELEG
+		FROM BOFFER_PANAMA A, PLAN_PAQ_SERV_PANAMA
+		B, PAQUETES_MIGRACION_PANAMA C, SERVICIOS_PANAMA D
+		WHERE A.SPCODE=
+		B.SPCODE AND A.SPCODE = C.SPCODE AND B.SNCODE=D.SNCODE
+	</select>
+
+	<select id="DATA.getTmcodeAd" resultClass="java.lang.Integer"
+		parameterClass="java.lang.Long">
+		SELECT a.tmcode
+		FROM (SELECT TMCODE
+		FROM PLANES_MIGRACION
+		WHERE TMCODE!= TMCODE_EQ AND TMCODE_EQ = $VALUE$ AND MIGRACION IS NULL
+		UNION
+		SELECT TMCODE_EQ FROM PLANES_MIGRACION
+		WHERE TMCODE!= TMCODE_EQ AND TMCODE = $VALUE$ AND MIGRACION IS NULL) a,
+		planes_migracion p
+		WHERE p.tmcode = a.tmcode
+		AND p.migracion is not null
+	</select>
+
+	<select id="DATA.getTmcodeAdPanama" resultClass="java.lang.Integer"
+		parameterClass="java.lang.Long">
+		SELECT TMCODE
+		FROM PLANES_MIGRACION_PANAMA
+		WHERE TMCODE!= TMCODE_EQ AND TMCODE_EQ =
+		$VALUE$ AND MIGRACION IS NULL
+		UNION
+		SELECT TMCODE_EQ FROM
+		PLANES_MIGRACION_PANAMA
+		WHERE TMCODE!= TMCODE_EQ AND TMCODE = $VALUE$
+		AND MIGRACION IS NULL
+	</select>
+
+	<select id="DATA.getPaquetesLDI" resultClass="paqueteLDI">
+		SELECT DISTINCT
+		SPCODE, NOMBRE, NOMBRE_AMDOCS, CCTOCZ, CFM, TIPO_BOLSA, CLASE,
+		DESCRIPCION
+		FROM LDI
+	</select>
+
+	<select id="DATA.getAttrPaqLDI" resultClass="attrPaqLDI"
+		parameterClass="java.lang.Integer">
+		SELECT ZONA, ALLOWANCE, VLR_MIN, VLR_ADIC
+		FROM LDI
+		WHERE SPCODE = $VALUE$
+	</select>
+
+	<select id="DATA.getPlanesAsociados" resultClass="java.lang.Integer"
+		parameterClass="java.lang.Long">
+		SELECT TMCODE
+		FROM PLANES_MIGRACION
+		WHERE MIGRACION =
+		'$VALUE$'
+	</select>
+
+	<select id="DATA.getServiceFilterList" resultClass="serviceFilterList">
+		SELECT ID,
+		NAME, OLDNAME
+		FROM SERVICEFILTERLIST
+
+	</select>
+
+	<select id="DATA.getServiceFilterToCharge" resultClass="serviceFilterToCharge">
+		SELECT
+		ID, NAME
+		FROM SERVICEFILTERTOCHARGE
+	</select>
+
+	<select id="DATA.getPriceOfertasDemandaRC" resultClass="recurringCharge"
+		parameterClass="java.lang.Integer">
+		SELECT pod.prit as name, pod.role
+		as role, pod.pit as pit, period_sensitivity_policy as
+		periodSensitivityPolicy, pod.service_filter as serviceFilter,
+		pod.service_filter_gp as service_filter_groupB, pod.round_factor_unit
+		as RoundingFactorMedida, pod.round_factor_value as
+		roundingFactorCantidad,
+		pod.rounding_method as roundingMethod, pod.minimum_unit_u as minimum_unitA,
+		pod.minimum_unit_v as minimum_unitB,
+		'Special day set' as Special_day_setB, 'Single period period set1' as
+		period_setB, pod.ser_fil_char_code as Service_filter_to_charge_codeB,
+		pod.TAXSERVICETYPE as TaxServiceType, RC_ROLE role,
+	    RC_PIT pit, RC_CHARGE_CODE charge_code, RC_PRORATION_METHOD  proration_method,
+	    RC_BO_DA_SPE_SUS as bou_date_spe_sus_rate,
+	    RC_FREQUENCY  frequency, RC_FREQUENCY_OF_PAYMENTS  frequency_of_payments,
+	    RC_PAYMENT_TIMING  payment_timing, RC_RATE  rate, RC_RC_LEVEL  RC_level,
+	    RC_ALLOW_RC_OVERRIDE_TYPE  allow_RC_override_type,  
+	    RC_DISC_PERC_PER_SUSP_RA dis_per_sus_reaA,
+	    RC_DISC_PERC_PER_SUSP_RB  dis_per_sus_reaB,
+	    RC_ENTRYINDEX  entryIndex, RC_NAME  name,  
+	    RC_CREATE_MULT_CHR_IND cre_mult_cha_ind,
+	    RC_CHARGE_CODE_OBJB  charge_codes_objectB   
+		FROM OF_DEM_PRC ofp,
+		PRICE_OFERTASDEMANDA pod, OFERTAS_DEMANDA od
+		WHERE od.id = ofp.idoferta
+		AND ofp.idprice = pod.id
+		AND od.id = $VALUE$
+	</select>
+
+	<select id="DATA.getPriceOfertasDemandaUC" resultClass="usageCharge"
+		parameterClass="java.lang.Integer">
+		SELECT pod.prit as name, pod.role
+		as role, pod.pit as pit, period_sensitivity_policy as
+		periodSensitivityPolicy, pod.service_filter as serviceFilter,
+		pod.service_filter_gp as service_filter_groupB, pod.round_factor_unit
+		as RoundingFactorMedida, pod.round_factor_value as
+		roundingFactorCantidad,
+		pod.rounding_method as roundingMethod, pod.minimum_unit_u as minimum_unitA,
+		pod.minimum_unit_v as minimum_unitB,
+		'Special day set' as Special_day_setB, 'Single period period set1' as
+		period_setB, pod.ser_fil_char_code as Service_filter_to_charge_codeB,
+		rate_period_ei as RPP_EntryIndex, rate_period_inc as RPP_Incremental,
+		rate_period_uomf as RPP_UOMForQuantity,
+		rate_table_ei as RTR_EntryIndex, rate_table_inc as RTR_Incremental, rate_table_uomf
+		as RTR_UOMForQuantity, pod.value as value,
+		pod.rate_group_list as rateGroupList, pod.TAXSERVICETYPE as TaxServiceType
+		FROM OF_DEM_PRC
+		ofp, PRICE_OFERTASDEMANDA pod, OFERTAS_DEMANDA od
+		WHERE od.id =
+		ofp.idoferta
+		AND ofp.idprice = pod.id
+		AND od.id = $VALUE$
+	</select>
+
+	<select id="DATA.getPriceOfertasDemandaOTC" resultClass="oneTimeCharge"
+		parameterClass="java.lang.Integer">
+		SELECT pod.prit as name,
+		pod.ONE_TIME_ROLE as role, pod.ONE_TIME_PIT as pit,
+		period_sensitivity_policy as periodSensitivityPolicy,
+		pod.service_filter as serviceFilter,
+		pod.service_filter_gp as service_filter_groupB, pod.round_factor_unit as
+		RoundingFactorMedida, pod.round_factor_value as
+		roundingFactorCantidad,
+		pod.rounding_method as roundingMethod, pod.minimum_unit_u as minimum_unitA,
+		pod.minimum_unit_v as minimum_unitB,
+		'Special day set' as Special_day_setB, 'Single period period set1' as
+		period_setB, pod.ser_fil_char_code as Service_filter_to_charge_codeB,
+		rate_period_ei as RPP_EntryIndex, rate_period_inc as RPP_Incremental,
+		rate_period_uomf as RPP_UOMForQuantity,
+		rate_table_ei as RTR_EntryIndex, rate_table_inc as RTR_Incremental, rate_table_uomf
+		as RTR_UOMForQuantity,
+		pod.one_time_rate as priceRate, 'Charge codes' as charCodesObject, 'RLC_Charge_codes '
+		AS chargeCodesObjecTemp, pod.one_time_char_code as oneTimeCC,
+		pod.rate_group_list as rateGroupList, pod.TAXSERVICETYPE as
+		TaxServiceType, pod.one_time_paidfrombal as Paidfrombalance,
+		pod.ONE_TIME_INMEDPAYREQ as Immediatepaymentrequired,
+		pod.ONE_TIME_OC_LEVEL as OC_LEVEL, pod.ONE_TIME_ALLOVERRIDE
+		ALLOWOVERRIDETYPE,
+		pod.one_time_discount DISCOUNT, POD.ONE_TIME_DISCOUNT_SCHEME DISCOUNT_SCHEME, POD.VALUE as
+		VALUE, pod.one_time_qual_cc_incre as
+		QUAL_CC_INCRE, pod.one_time_qual_cc_index as QUAl_CC_INDEX,
+		pod.ONE_TIME_CHARGECODE_VA as CC_AlQUEDESCONT
+		FROM OF_DEM_PRC ofp, PRICE_OFERTASDEMANDA pod, OFERTAS_DEMANDA od
+		WHERE od.id = ofp.idoferta
+		AND ofp.idprice = pod.id
+		AND od.id = $VALUE$
+	</select>
+
+	<select id="DATA.getValue" resultClass="value" parameterClass="java.lang.Integer">
+		SELECT v.id, v.idprice, v.item_parameter, v.value, v.rate_group
+		FROM
+		value v, of_dem_prc odp
+		WHERE odp.idprice = v.idprice
+		AND odp.idoferta =
+		$VALUE$
+	</select>
+
+	<select id="DATA.getRefTT" resultClass="tt">
+		SELECT m.tmcode, b.spcode, 0 AS sncode, b.plan, b.paquete, b.promocion AS
+		descripcion, k.desc_bo,
+		b.caract_eleg, b.cfm, k.fecha_inicio, k.fecha_venta
+		FROM (SELECT * FROM planes_migracion WHERE migracion IS NULL) b ,
+		planes_migracion m, boffer k
+		WHERE m.obsdesactivacion IS NOT NULL AND m.obsdesactivacion =
+		TO_CHAR(b.tmcode) AND k.tmcode = b.tmcode
+		AND (k.desc_bo NOT LIKE '%- Promo12x12%' AND k.desc_bo NOT LIKE '%-
+		PromoOnnet%')
+		UNION
+		SELECT DISTINCT s.tmcode, s.spcode, 0 AS sncode,s.plan, s.paquete,
+		s.promocion AS descripcion, a.desc_bo, s.caract_eleg,
+		s.cfm, a.fecha_inicio, a.fecha_venta
+		FROM planes_migracion s, boffer a
+		WHERE s.migracion IS NULL AND (s.obsdesactivacion IS NULL OR
+		s.obsdesactivacion LIKE 'N/A')
+		AND a.tmcode = s.tmcode AND s.tmcode >= 0 AND
+		(a.desc_bo NOT LIKE '%- Promo12x12%' AND a.desc_bo NOT LIKE '%- PromoOnnet%')
+		UNION
+		SELECT d.tmcode, d.spcode, 0 AS sncode, d.PLAN, d.paquete, d.promocion AS
+		descripcion, 'Clientes Facturas Abiertas' AS desc_bo,
+		d.caract_eleg, d.cfm, d.fecha_inicio as fecha_inicio, d.fecha_venta
+		FROM planes_migracion d
+		WHERE ( d.migracion like 'X' OR d.migracion like 'Y')
+	</select>
+	<select id="DATA.getRefTTPre" resultClass="tt">
+		SELECT DISTINCT s.tmcode, s.spcode, 0 AS sncode,s.plan, s.paquete,
+    					s.promocion AS descripcion, a.desc_bo, s.caract_eleg,
+    					s.cfm, a.fecha_inicio, a.fecha_venta
+    	FROM 			planes_migracion s, boffer a
+    	WHERE 			s.migracion like 'P' AND a.PLAN_BASICO = 1
+    	AND 			a.tmcode = s.tmcode and a.spcode = s.spcode AND s.tmcode >= 0 AND
+    					(a.desc_bo NOT LIKE '%- Promo12x12%' AND a.desc_bo NOT LIKE '%-
+    					PromoOnnet%')AND a.spcode not like 0
+        order by 		s.tmcode, s.spcode asc
+	</select>
+	<insert id="DATA.insertTTBO" parameterClass="tt">
+		insert into TTS (TMCODE, SPCODE,SNCODE, TMCODE_DESC,SPCODE_DESC,SNCODE_DESC, BO_COD)
+		values($tmcode$,$spcode$, $sncode$, '$plan$','$paquete$', '$descripcion$', '$desc_bo$')
+	</insert>
+
+	<insert id="DATA.insertTTPO" parameterClass="tt">
+		insert into TTS (TMCODE, SPCODE, PO_COD, PROMOCION)
+		values($tmcode$,$spcode$, '$desc_bo$','$descripcion$' )
+	</insert>
+
+	<procedure id="DATA.calidadTotales2">
+		{call CALIDAD_TOTALES()}
+	</procedure>
+
+	<parameterMap id="getCalidad1" class="map">
+		<parameter property="acctID" jdbcType="INT" javaType="java.lang.Integer"
+			mode="IN" />
+	</parameterMap>
+
+	<resultMap id="resultTotales" class="segCal">
+		<result property="TOT_PLAN_MIG" column="TOT_PLAN_MIG" />
+		<result property="TOT_PAQ_MIG" column="TOT_PAQ_MIG" />
+		<result property="TOTAL_BO" column="TOTAL_BO" />
+		<result property="TOTAL_BO_PAQ" column="TOTAL_BO_PAQ" />
+		<result property="TOTAL_BO_PLAN" column="TOTAL_BO_PLAN" />
+		<result property="TOTAL_REG_PLANES" column="TOTAL_REG_PLANES" />
+		<result property="TOTAL_REG_PAQ" column="TOTAL_REG_PAQ" />
+		<result property="TOT_PO_TTS" column="TOT_PO_TTS" />
+		<result property="TOT_BO_PLTTS" column="TOT_BO_PLTTS" />
+		<result property="TOT_BO_PQTTS" column="TOT_BO_PQTTS" />
+	</resultMap>
+
+	<parameterMap id="getcalidad" class="java.lang.Integer">
+		<parameter property="acctID" jdbcType="INT" javaType="java.lang.Integer"
+			mode="IN" />
+		<!-- <parameter property="result" jdbcType="REF" mode="OUT" resultMap="resultTotales"/> -->
+	</parameterMap>
+
+	<select id="DATA.calidadTotales" parameterMap="getcalidad" resultClass="segCal">
+		{call CALIDAD_TOTALES(?)}
+	</select>
+	
+	<select id="DATA.querycalidadTotales" resultClass="segCal">
+		SELECT  tot_planesmigrados TOT_PLAN_MIG, tot_paqmigrados TOT_PAQ_MIG,
+        		tot_bo TOTAL_BO, tot_bo_paq TOTAL_BO_PAQ,
+        		tot_bo_plan TOTAL_BO_PLAN, tot_planes TOTAL_REG_PLANES, tot_paquetes
+        		TOTAL_REG_PAQ, TOT_POTTS TOT_PO_TTS,
+        		TOT_BOPLTTS TOT_BO_PLTTS, TOT_BOPQTTS TOT_BO_PQTTS,
+        		s.tot_planprepmig, s.tot_boservprep, s.tot_boadiciprep, s.tot_bodemprep,
+        		s.tot_boservpost, s.tot_bodempost,ofventa_vig,
+                ofventa_novig, ofcamplan_vig, ofcamplan_novig, 
+                eleg_fnf, eleg_bfnf1, eleg_bfnf2, eleg_bfnf3,
+                eleg_bfnf0, eleg_fnf0,compcard_mand, compcard_opc, 
+                compcard_opcxdef, compprepago, activitycharge, compcard_exc 
+    	FROM 	SEGUIMIENTO_TOTALES S
+    	WHERE 	S.FECHA_VERSION = ( SELECT MAX(g.FECHA_VERSION) FROM
+   				SEGUIMIENTO_TOTALES g )
+	</select>
+	
+	
+	<select id="DATA.comparPAQTTS_BO" resultClass="CompTTBO">
+		select b.spcode, b.sncode, b.desc_bo  from boffer b where b.tipo_paq is not null minus 
+		select t.spcode,  t.sncode, t.bo_cod   from tts t where  t.po_cod is null and ( t.tmcode is null or t.tmcode &lt; 0 )		
+	</select>
+	
+	<select id="DATA.comparPLANTTS_BO" resultClass="CompTTBO">
+			select b.tmcode, b.spcode, b.desc_bo  from boffer  b where  b.plan_basico = 1 minus
+			select t.tmcode, t.spcode, t.po_cod  from tts t where t.bo_cod is null 		
+	</select>
+	
+
+	<insert id="DATA.insertCalidad" parameterMap="getcalidad">
+		{call CALIDAD_TOTALES(?)}
+	</insert>
+	
+	<select id="DATA.getNewOffersAmdocs" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+			   	case when s.plan_dox like '%Costa%' then 'COSTA'
+     			when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+     			when s.plan_dox like '%Oriente%' then 'ORIENTE'
+     			else  'TODAS' end as zona,
+				s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  from  planes_migracion  s,  boffer b
+			where s.migracion like 'P' and s.tmcode = b.tmcode and s.spcode = b.spcode
+				and s.vigente like 'S'		
+	</select>
+	<select id="DATA.getOfertasVig" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+			   	case when s.plan_dox like '%Costa%' then 'COSTA'
+     			when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+     			when s.plan_dox like '%Oriente%' then 'ORIENTE'
+     			else  'TODAS' end as zona,
+				s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  from  planes_migracion  s,  boffer b
+			    where s.migracion like 'P' and s.tmcode = b.tmcode and s.spcode = b.spcode
+				and s.vigente = 'S' and s.ofer_cambioplan = 'N'	
+	</select>
+	<select id="DATA.getOfertasNoVig" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+			   	case when s.plan_dox like '%Costa%' then 'COSTA'
+     			when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+     			when s.plan_dox like '%Oriente%' then 'ORIENTE'
+     			else  'TODAS' end as zona,
+				s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  from  planes_migracion  s,  boffer b
+			    where s.migracion like 'P' and s.tmcode = b.tmcode and s.spcode = b.spcode and 
+				s.vigente = 'N' and s.ofer_cambioplan like 'N'
+	</select>
+	
+	<select id="DATA.getOferCambioPlanVig" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+			   	case when s.plan_dox like '%Costa%' then 'COSTA'
+     			when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+     			when s.plan_dox like '%Oriente%' then 'ORIENTE'
+     			else  'TODAS' end as zona,
+				s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  from  planes_migracion  s,  boffer b
+			    where s.migracion like 'P' and s.tmcode = b.tmcode and s.spcode = b.spcode and 
+				s.vigente = 'S' and s.ofer_cambioplan like 'S'
+	</select>
+	
+	
+	
+	
+	
+	<select id="DATA.getOferCambioPlanNoVig" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+			   	case when s.plan_dox like '%Costa%' then 'COSTA'
+     			when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+     			when s.plan_dox like '%Oriente%' then 'ORIENTE'
+     			else  'TODAS' end as zona,
+				s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  from  planes_migracion  s,  boffer b
+			    where s.migracion like 'P' and s.tmcode = b.tmcode and s.spcode = b.spcode and 
+				s.vigente = 'N' and s.ofer_cambioplan like 'S'
+	</select>
+	
+	
+	<select id="DATA.getMaterialSim" resultClass="matsim">
+			select * from codmaterialsim  b order by b.codmaterial asc		
+	</select>
+	
+	<select id="DATA.getOfertasPlan" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+			   	case when s.plan_dox like '%Costa%' then 'COSTA'
+     			when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+     			when s.plan_dox like '%Oriente%' then 'ORIENTE'
+     			else  'TODAS' end as zona,
+				s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  from  planes_migracion  s,  boffer b
+			    where s.migracion like 'P' and s.tmcode = b.tmcode and s.spcode = b.spcode and 
+				s.migracion like 'P'
+	</select>
+	
+	<select id="DATA.getOfertasServ" resultClass="ofertasDemanda">
+		    SELECT * FROM OFERTAS_DEMANDA D
+             WHERE D.TIPO = 'Prepago' AND 
+             D.TIPO_SERVICIO  LIKE 'Servicio'
+	</select>
+	
+	<select id="DATA.getOfertasAdicional" resultClass="ofertasDemanda">
+		     SELECT * FROM OFERTAS_DEMANDA D
+             WHERE D.TIPO = 'Prepago' AND 
+             D.TIPO_SERVICIO  LIKE 'Adicional'
+	</select>
+	
+	<select id="DATA.getOfertaMercado" resultClass="ofertasDemanda">
+		    SELECT * FROM OFERTAS_DEMANDA D
+            WHERE D.TIPO = 'Prepago' AND 
+            D.TIPO_SERVICIO LIKE 'Mercado'
+	</select>
+	
+	<select id="DATA.getOferElegFNF" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+           case when s.plan_dox like '%Costa%' then 'COSTA'
+           when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+           when s.plan_dox like '%Oriente%' then 'ORIENTE'
+           else  'TODAS' end as zona,
+           s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  
+           from planes_migracion s,prepago_eleg g, boffer b
+           where g.planprepago = s.planprepago 
+           and  g.elegidos_fnf > 0 and s.migracion like 'P'
+           and s.tmcode = b.tmcode and s.spcode = b.spcode 
+	</select>
+	
+	<select id="DATA.getOferEleg1BFNF" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+           case when s.plan_dox like '%Costa%' then 'COSTA'
+           when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+           when s.plan_dox like '%Oriente%' then 'ORIENTE'
+           else  'TODAS' end as zona,
+           s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  
+           from planes_migracion s,prepago_eleg g, boffer b
+           where g.planprepago = s.planprepago 
+           and  g.elegidos_bfnf = 1 and s.migracion like 'P'
+           and s.tmcode = b.tmcode and s.spcode = b.spcode 
+	</select>
+	
+	<select id="DATA.getOferEleg2BFNF" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+           case when s.plan_dox like '%Costa%' then 'COSTA'
+           when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+           when s.plan_dox like '%Oriente%' then 'ORIENTE'
+           else  'TODAS' end as zona,
+           s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  
+           from planes_migracion s,prepago_eleg g, boffer b
+           where g.planprepago = s.planprepago 
+           and  g.elegidos_bfnf = 2 and s.migracion like 'P'
+           and s.tmcode = b.tmcode and s.spcode = b.spcode 
+	</select>
+	<select id="DATA.getOferEleg3BFNF" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+           case when s.plan_dox like '%Costa%' then 'COSTA'
+           when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+           when s.plan_dox like '%Oriente%' then 'ORIENTE'
+           else  'TODAS' end as zona,
+           s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  
+           from planes_migracion s,prepago_eleg g, boffer b
+           where g.planprepago = s.planprepago 
+           and  g.elegidos_bfnf =3 and s.migracion like 'P'
+           and s.tmcode = b.tmcode and s.spcode = b.spcode 
+	</select>
+	<select id="DATA.getOferEleg0BFNF" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+           case when s.plan_dox like '%Costa%' then 'COSTA'
+           when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+           when s.plan_dox like '%Oriente%' then 'ORIENTE'
+           else  'TODAS' end as zona,
+           s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  
+           from planes_migracion s,prepago_eleg g, boffer b
+           where g.planprepago = s.planprepago 
+           and  g.elegidos_bfnf = 0 and s.migracion like 'P'
+           and s.tmcode = b.tmcode and s.spcode = b.spcode 
+	</select>
+	
+	<select id="DATA.getOferEleg0FNF" resultClass="NOA">
+		   select s.planprepago, s.tmcode, s.plan as plan_bscs, s.spcode, s.paquete as paquete_bscs, 
+           case when s.plan_dox like '%Costa%' then 'COSTA'
+           when s.plan_dox like '%Occidente%' then 'OCCIDENTE'
+           when s.plan_dox like '%Oriente%' then 'ORIENTE'
+           else  'TODAS' end as zona,
+           s.bo_id, b.desc_bo billing_offer, s.po_id, b.desc_bo product_offering  
+           from planes_migracion s,prepago_eleg g, boffer b
+           where g.planprepago = s.planprepago 
+           and  g.elegidos_fnf = 0  and s.migracion like 'P'
+           and s.tmcode = b.tmcode and s.spcode = b.spcode 
+	</select>
+	
+	<select id="DATA.getCompMand" resultClass="comp">
+		  select DESCRIPCION, COMPONENT1, COMPONENT2, COMPONENT3, OBSERVACION, COD_COMPONENTE,
+   			SEGMENTO, BLOQUEO, PRODUCT_SPEC, MAIN_COMP, ID_COMP SNCODE, COMPONENT4, PREP_MIN, PREP_MAX,
+    		PREP_DEF, TYPE  from componentes_bo s
+         	where s.type like 'Component'
+          	and s.prep_min = 1 and s.prep_max = 1 and s.prep_def = 1		
+	</select>
+	
+	<select id="DATA.getCompOpc" resultClass="comp">
+		  select DESCRIPCION, COMPONENT1, COMPONENT2, COMPONENT3, OBSERVACION, COD_COMPONENTE,
+   			SEGMENTO, BLOQUEO, PRODUCT_SPEC, MAIN_COMP, ID_COMP SNCODE, COMPONENT4, PREP_MIN, PREP_MAX,
+    		PREP_DEF, TYPE  from componentes_bo s
+          	where s.type like 'Component'
+          	and s.prep_min = 0 and s.prep_max = 1 and s.prep_def = 0 		
+	</select>
+	
+	<select id="DATA.getCompOpcxDef" resultClass="comp">
+		  select  DESCRIPCION, COMPONENT1, COMPONENT2, COMPONENT3, OBSERVACION, COD_COMPONENTE,
+   			SEGMENTO, BLOQUEO, PRODUCT_SPEC, MAIN_COMP, ID_COMP SNCODE, COMPONENT4, PREP_MIN, PREP_MAX,
+    		PREP_DEF, TYPE  from componentes_bo s
+          	where s.type like 'Component'
+          	and s.prep_min = 0 and s.prep_max = 1 and s.prep_def = 1		
+	</select>
+	
+	<select id="DATA.getCompExcluidos" resultClass="comp">
+		  select DESCRIPCION, COMPONENT1, COMPONENT2, COMPONENT3, OBSERVACION, COD_COMPONENTE,
+   			SEGMENTO, BLOQUEO, PRODUCT_SPEC, MAIN_COMP,  ID_COMP SNCODE, COMPONENT4, PREP_MIN, PREP_MAX,
+    		PREP_DEF, TYPE from componentes_bo s
+          	where s.type like 'Component'
+           and s.prep_min = 0 and s.prep_max = 0 and s.prep_def = 0	
+	</select>
+	<select id="DATA.getCompPrepago" resultClass="comp">
+		  select  DESCRIPCION, COMPONENT1, COMPONENT2, COMPONENT3, OBSERVACION, COD_COMPONENTE,
+   			SEGMENTO, BLOQUEO, PRODUCT_SPEC, MAIN_COMP, ID_COMP SNCODE, COMPONENT4, PREP_MIN, PREP_MAX,
+    		PREP_DEF, TYPE from componentes_bo s
+          	where s.type like 'Component' and 
+          	(s.prep_min not like 0 or s.prep_max not like 0 or  s.prep_def not like 0)	
+	</select>
+	<select id="DATA.getActCharge" resultClass="comp">
+		   select  DESCRIPCION, COMPONENT1, COMPONENT2, COMPONENT3, OBSERVACION, COD_COMPONENTE,
+   			SEGMENTO, BLOQUEO, PRODUCT_SPEC, MAIN_COMP, ID_COMP SNCODE, COMPONENT4, PREP_MIN, PREP_MAX,
+    		PREP_DEF, TYPE  from componentes_bo s
+            where s.type like 'Activity Charge'	
+	</select>
+	
+</sqlMap>

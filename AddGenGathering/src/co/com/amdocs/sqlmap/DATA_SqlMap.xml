@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE sqlMap
+ PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="DATA">
+	<!--Definicion de alias de reconocimiento de Objeto al cual mapear los resultados 
+		de los querys y updates -->
+ 	<typeAlias alias="canven" type="co.com.amdocs.vo.canales_venta"/> 
+	<typeAlias alias="ofamd" type="co.com.amdocs.vo.oferta_amdocs"/> 
+	<typeAlias alias="pt" type="co.com.amdocs.vo.PRODUCT_TYPE"/> 
+	<typeAlias alias="to" type="co.com.amdocs.vo.Tipo_oferta"/> 
+	<typeAlias alias="od" type="co.com.amdocs.vo.Ofertas_demanda"/> 
+	<typeAlias alias="pp" type="co.com.amdocs.vo.PlanPrepago"/> 
+	<typeAlias alias="plan" type="co.com.amdocs.vo.Plan"/> 
+	<typeAlias alias="us" type="co.com.amdocs.vo.usingSimcard"/>	
+	<typeAlias alias="ce" type="co.com.amdocs.vo.carac_elegidos"/>
+	<typeAlias alias="zon" type="co.com.amdocs.vo.zona"/>
+	<typeAlias alias="ccr" type="co.com.amdocs.vo.CcRequerimientos"/>
+	
+	<select id="DATA.getCanalesVenta" resultClass="canven"> 	
+		  select c.id_canalventa id, c.canal_venta from canales_ventaprep  c order by c.id_canalventa asc
+    </select>  	
+    
+    <select id="DATA.getPlanEquiv" resultClass="ofamd" parameterClass="java.lang.String">
+			select d.plan, d.tmcode, d.paquete, d.spcode,
+     		   d.descripcion1||d.descripcion2||d.descripcion3||d.descripcion4
+     		   ||d.descripcion5||d.descripcion6||d.descripcion7||d.descripcion8  as descripcion,
+     		   d.planprepago, d.usingsimcardprepag1, d.fecha_inicio, d.fecha_venta,
+    		   d.product_type, d.tecnologia  from planes_migracion d where d.tmcode = #VALUE#
+	</select>
+	 <select id="DATA.getPlanEquiv2" resultClass="ofamd" parameterClass="ofamd">
+	 		select d.plan, d.tmcode, d.paquete, d.spcode,
+     		   d.descripcion1||d.descripcion2||d.descripcion3||d.descripcion4
+     		   ||d.descripcion5||d.descripcion6||d.descripcion7||d.descripcion8  as descripcion,
+     		   d.planprepago, d.usingsimcardprepag1, d.fecha_inicio, d.fecha_venta,
+    		   d.product_type, d.tecnologia  from planes_migracion d where d.tmcode = $tmcode$ and 
+    		   d.spcode = $spcode$
+	
+	</select>
+	 <select id="DATA.getPlan" resultClass="plan" parameterClass="java.lang.String">
+	  		select * from planes_migracion s where s.spcode not like 0 and s.tmcode = #VALUE#
+	</select>
+	<select id="DATA.getProductType" resultClass="pt">
+		select distinct product_type from product_type
+	</select>
+	
+	<select id="DATA.getZona" resultClass="zon">
+		select zona from ZONA t
+	</select>   
+    
+    <select id="DATA.getTecnologia" resultClass="pt">
+		select distinct tecnologia from product_type
+	</select>
+	
+	 <select id="DATA.getTipoOferta" resultClass="to">
+		select * from tipo_oferta
+	</select>
+     <select id="DATA.getOfertasDemanda" resultClass="od">
+		SELECT A.NOMBRE NOM_OFERTA, B.VALUE CARGO, B.TAXSERVICETYPE IVA 
+		FROM OFERTAS_DEMANDA A, PRICE_OFERTASDEMANDA B, OF_DEM_PRC C 
+	    WHERE  A.TIPO LIKE 'Prepago' and a.tipo_oferta like 'Demanda' AND 
+		A.ID = C.IDOFERTA AND C.IDPRICE = B.ID
+	</select>    
+    <select id="DATA.getPlanPrepago" resultClass="pp">
+		select g.planprepago, g.elegidos_fnf, g.elegidos_bfnf from prepago_eleg g
+	</select>
+	
+	 <select id="DATA.getUsingSimcard" resultClass="us">
+		 select distinct s.usingsimcardprepag1, s.usingsimcardprepag from planes_migracion s
+ 		where s.usingsimcardprepag1 is not null and  s.usingsimcardprepag is not null
+	</select>
+	
+  	<insert id="DATA.insertPlan" parameterClass="plan">
+		INSERT INTO
+		PLANES_MIGRACION(TIPOPLAN, SEGMENTO, FECHA_INICIO,  PLANPREPAGO, MIGRACION, TMCODE, PLAN, SPCODE, PAQUETE, 
+		IVA, TIPOBUZON, CARACT_PLAN, QA_SERVICIO, DPI_INICIAL, DPI_CONTROL, RC_ACT, RC_CONTROL, GAMA_OCC, 
+		GAMA_COS, GAMA_ORI, BB_QOS_ACT, BB_QOS_CONTROL, DESCRIPCION1, DESCRIPCION2, DESCRIPCION3, DESCRIPCION4, 
+		DESCRIPCION5, DESCRIPCION6, DESCRIPCION7, PERCENTAGE_FOR_DOWNGRADE, PLAN_DOX, EQUIPO, SUBTYPE, AMSS, OMS, 
+		PRODUCT_TYPE, LTE_QOS_ACT, LTE_QOS_CONTROL, PCRF_CODE, QCI, UPLINK_SPEED,DOWNLINK_SPEED, TECNOLOGIA, VIGENTE, 
+		OFER_CAMBIOPLAN, OFER_VENTA, EFFECTIVE_DATE, USINGSIMCARDPREPAG,  USINGSIMCARDPREPAG1, CFM, CANALVENTA, NOMBRE_APROV, DESCRIPCION, ZONA) VALUES
+		('$TIPOPLAN$','$SEGMENTO$','$FECHA_INICIO$','$PLANPREPAGO$','$MIGRACION$',$TMCODE$,'$PLAN$',$SPCODE$,'$PAQUETE$',
+		 '$IVA$','$TIPOBUZON$','$CARACT_PLAN$',$QA_SERVICIO$,'$DPI_INICIAL$','$DPI_CONTROL$','$RC_ACT$','$RC_CONTROL$','$GAMA_OCC$',
+		 '$GAMA_COS$','$GAMA_ORI$','$BB_QOS_ACT$','$BB_QOS_CONTROL$','$DESCRIPCION1$','$DESCRIPCION2$','$DESCRIPCION3$','$DESCRIPCION4$',
+		 '$DESCRIPCION5$','$DESCRIPCION6$','$DESCRIPCION7$','$PERCENTAGE_FOR_DOWNGRADE$','$PLAN_DOX$','$EQUIPO$','$SUBTYPE$','$AMSS$','$OMS$',
+		  '$PRODUCT_TYPE$',$LTE_QOS_ACT$,$LTE_QOS_CONTROL$,$PCRF_CODE$,$QCI$,$UPLINK_SPEED$,
+		  $DOWNLINK_SPEED$,'$TECNOLOGIA$','$VIGENTE$','$OFER_CAMBIOPLAN$','$OFER_VENTA$','$EFFECTIVE_DATE$','$USINGSIMCARDPREPAG$','$USINGSIMCARDPREPAG1$', 
+		  $CFM$, '$CANALVENTA$', '$NOMBRE_APROV$', '$DESCRIPCION$', '$ZONA$')
+	</insert> 
+	<insert id="DATA.insertPlanTemp" parameterClass="plan">
+		INSERT INTO
+		PLANES_MIGRACION_INC(TIPOPLAN, SEGMENTO, FECHA_INICIO,  PLANPREPAGO, MIGRACION, TMCODE, PLAN, SPCODE, PAQUETE, 
+		IVA, TIPOBUZON, CARACT_PLAN, QA_SERVICIO, DPI_INICIAL, DPI_CONTROL, RC_ACT, RC_CONTROL, GAMA_OCC, 
+		GAMA_COS, GAMA_ORI, BB_QOS_ACT, BB_QOS_CONTROL, DESCRIPCION1, DESCRIPCION2, DESCRIPCION3, DESCRIPCION4, 
+		DESCRIPCION5, DESCRIPCION6, DESCRIPCION7, PERCENTAGE_FOR_DOWNGRADE, PLAN_DOX, EQUIPO, SUBTYPE, AMSS, OMS, 
+		PRODUCT_TYPE, LTE_QOS_ACT, LTE_QOS_CONTROL, PCRF_CODE, QCI, UPLINK_SPEED,DOWNLINK_SPEED, TECNOLOGIA, VIGENTE, 
+		OFER_CAMBIOPLAN, OFER_VENTA, EFFECTIVE_DATE, USINGSIMCARDPREPAG,  USINGSIMCARDPREPAG1, CFM, 
+		CANALVENTA,	ANOTACION_AD,	ANOTACION_AD1,	ANOTACION_AD2,	ANOTACION_AD3,	ANOTACION_AD4,	ANOTACION_AD5,
+		ANOTACION_AD6,	ANOTACION_AD7,	NOMBRE_APROV, DESCRIPCION, ZONA)
+		 VALUES
+		('$TIPOPLAN$','$SEGMENTO$','$FECHA_INICIO$','$PLANPREPAGO$','$MIGRACION$',$TMCODE$,'$PLAN$',$SPCODE$,'$PAQUETE$',
+		 '$IVA$','$TIPOBUZON$','$CARACT_PLAN$',$QA_SERVICIO$,'$DPI_INICIAL$','$DPI_CONTROL$','$RC_ACT$','$RC_CONTROL$','$GAMA_OCC$',
+		 '$GAMA_COS$','$GAMA_ORI$','$BB_QOS_ACT$','$BB_QOS_CONTROL$','$DESCRIPCION1$','$DESCRIPCION2$','$DESCRIPCION3$','$DESCRIPCION4$',
+		 '$DESCRIPCION5$','$DESCRIPCION6$','$DESCRIPCION7$','$PERCENTAGE_FOR_DOWNGRADE$','$PLAN_DOX$','$EQUIPO$','$SUBTYPE$','$AMSS$','$OMS$',
+		  '$PRODUCT_TYPE$',$LTE_QOS_ACT$,$LTE_QOS_CONTROL$,$PCRF_CODE$,$QCI$,$UPLINK_SPEED$,
+		  $DOWNLINK_SPEED$,'$TECNOLOGIA$','$VIGENTE$','$OFER_CAMBIOPLAN$','$OFER_VENTA$','$EFFECTIVE_DATE$','$USINGSIMCARDPREPAG$','$USINGSIMCARDPREPAG1$',$CFM$,
+		  '$CANALVENTA$', '$ANOTACION_AD$', '$ANOTACION_AD1$', '$ANOTACION_AD2$', '$ANOTACION_AD3$', '$ANOTACION_AD4$', '$ANOTACION_AD5$',
+		  '$ANOTACION_AD6$','$ANOTACION_AD7$', '$NOMBRE_APROV$', '$DESCRIPCION$', '$ZONA$')
+	</insert> 
+	
+	<insert id="DATA.insertPrepagoPlat" parameterClass="pp">
+	  	insert into 
+		PREPAGO_ELEG( planprepago, elegidos_fnf, elegidos_bfnf, valor_onnet, valor_offnet, valor_fijo, caract_elegfnf, caract_elegbfnf, ffsmsmaxnumele_on, ffsmsdur, 
+	                  bfnfvdurtd, ffvzdur, bfnfvdurtillre, ffvzdurtillre,  ffsmsdurtillre, bfnfvdaynextnch, ffvzdaynextnch, ffsmsdaynextnch, ffvzmaxnumele_td )
+	    VALUES      ('$planprepago$', $elegidos_fnf$, $elegidos_bfnf$, $valor_onnet$, $valor_offnet$, $valor_fijo$, '$caract_elegfnf$',
+	    			'$caract_elegbfnf$',  '$ffsmsmaxnumele_on$', '$ffsmsdur$', '$bfnfvdurtd$', '$ffvzdur$', '$bfnfvdurtillre$', '$ffvzdurtillre$', '$ffsmsdurtillre$',
+	    			'$bfnfvdaynextnch$', '$ffvzdaynextnch$', '$ffsmsdaynextnch$', '$ffvzmaxnumele_td$')
+	</insert> 
+	
+	 <select id="DATA.getCaractFNF" resultClass="ce">
+	  		select  distinct  s.caract_elegfnf desc_eleg from prepago_eleg s	 
+	 </select>
+	 
+	 <select id="DATA.getCaractBFNF" resultClass="ce">
+	 		select distinct  s.caract_elegbfnf desc_eleg from prepago_eleg s 	  			
+	 </select>
+	 
+	<!-- Formulario CC_Requermiento  Iniciacion de Formulario CC_req. -->
+	  
+	  <insert id="DATA.insertCC_req" parameterClass="ccr">
+			INSERT INTO
+   			TBL_CCREQUERIMIENTOS( NUM_REQ,NRO_DEFECTO,REQUERIMIENTO, DESCRIP_TAREA,SOLICITANTE, FECHA_RECIBIDO,
+     						  FECHA_ENTREGA,AVANCE)
+    		 VALUES
+    						($NUM_REQ$,$NRO_DEFECTO$,'$REQUERIMIENTO$','$DESCRIP_TAREA$','$SOLICITANTE$',
+    						'$FECHA_RECIBIDO$','$FECHA_ENTREGA$','$AVANCE$')
+	  </insert>
+	     
+	      <select id="DATA.getNum_req" resultClass="ccr">
+		   	       select p.num_req+1 NUM_REQ,p.nro_defecto, p.requerimiento, dbms_lob.substr(p.descrip_tarea,4000,1) as descrip_tarea, p.solicitante,
+                          p.fecha_recibido, p.fecha_entrega, p.avance from tbl_ccrequerimientos p where num_req = 
+                          (select max(NUM_REQ)from tbl_ccrequerimientos)
+		  </select>
+		  
+		  <!--Select para Buscar CCRequerimientos-->
+		  <select id="DATA.BuscarReq" resultClass="ccr" parameterClass="ccr">
+		  			select p.num_req ,p.nro_defecto, p.requerimiento, dbms_lob.substr(p.descrip_tarea,4000,1) as 
+					descrip_tarea, p.solicitante, p.fecha_recibido, p.fecha_entrega, p.avance from tbl_ccrequerimientos p 
+			 		where p.num_req = $NUM_REQ$
+		  </select>
+		  
+		  <!-- Eliminar CCRequerimientos-->
+		  <delete id="DATA.EliminarReq" parameterClass="java.lang.Integer">
+		  			delete from tbl_ccrequerimientos k
+					where k.num_req = $VALUE$
+		  </delete>
+		  
+		  <!-- Actualizar CCRequerimientos-->
+		  <update id="UpdateReq" parameterClass="ccr">
+		 			 update tbl_ccrequerimientos m set
+						m.NRO_DEFECTO = #NRO_DEFECTO#, 
+						m.REQUERIMIENTO = #REQUERIMIENTO#, 
+						m.DESCRIP_TAREA = #DESCRIP_TAREA#, 
+						m.SOLICITANTE = #SOLICITANTE#, 
+						m.FECHA_RECIBIDO = #FECHA_RECIBIDO#, 
+						m.FECHA_ENTREGA =#FECHA_ENTREGA#, 
+						m.AVANCE = #AVANCE#
+						where m.NUM_REQ = #NUM_REQ#
+		  </update>
+	 
+	     
+	 
+	 
+	 
+	 	
+    
+</sqlMap>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-beanutils.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-codec-1.3.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-dbcp-1.4.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-digester.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-discovery-0.2.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-httpclient-3.1.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-logging.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-logging-1.1.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/commons-pool-1.4.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/eclipse.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/eclipse-ui-forms-3.5.0.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/geronimo-stax-api_1.0_spec-1.0.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/ibatis-common-2.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/ibatis-dao-2.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/ibatis-sqlmap-1-x.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/ibatis-sqlmap-2.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/junit-3.8.1.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/log4j-1.2.13.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/ojdbc14.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/org.eclipse.e4.ui.di_0.9.0.v20100816-1230.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/org.eclipse.jface.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/org.eclipse.swt-3.1.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/poi-3.7-20101029.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/poi-examples-3.7-20101029.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/poi-ooxml-3.7-20101029.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/poi-ooxml-schemas-3.7-20101029.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/poi-scratchpad-3.7-20101029.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/xmlbeans-2.3.0.jar"/>
+	<classpathentry kind="lib" path="D:/Jars/jcalendar-1.3.3.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GenGathePO"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GenGatherBO"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

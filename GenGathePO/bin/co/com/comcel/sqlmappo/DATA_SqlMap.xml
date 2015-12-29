@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE sqlMap
+ PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="DATA">
+
+	<!--Definicion de alias de reconocimiento de Objeto al cual mapear los resultados de los querys y updates-->
+	<typeAlias alias="planB" type="co.com.comcel.vopo.planBasico" />
+			
+	<select id="DATA.getPlanesBasicos" resultClass="planB">
+		SELECT * 
+		FROM  PLAN_PAQ_SERV
+		WHERE TIPO = 'B'
+	</select>
+	<!--Definicion de alias de reconocimiento de Objeto al cual mapear los resultados de los querys y updates-->
+		
+	<typeAlias alias="PO1" type="co.com.comcel.vopo.productOffering" />			
+	<select id="DATA.getProductOffering1" resultClass="PO1">
+		SELECT  * FROM BOFFER WHERE 
+		TMCODE IS NOT Null AND DESC_BO NOT IN 
+		( SELECT DESC_BO  FROM BOFFER WHERE DESC_BO LIKE
+		('% - PromoOnnet'))
+	</select>
+ 	<typeAlias alias="PO" type="co.com.comcel.vopo.productOffering" />			
+ 	<select id="DATA.getProductOffering" resultClass="PO">
+		SELECT  BO.TMCODE,bo.spcode, bo.desc_bo, bo.tipo_plan, bo.tipo_paq, BO.NUM_ELEG, BO.PLAN_BASICO, BO.ATRMAP_TOPO, 
+        		BO.TIPO_PLAN_FAM, BO.SNCODE, BO.FECHA_INICIO, BO.FECHA_VENTA, 
+        		e.elegidos_fnf, e.ELEGIDOS_BFNF, e.VALOR_ONNET, E.VALOR_OFFNET, E.VALOR_FIJO        		  
+ 		FROM   	BOFFER BO inner join  PLANES_MIGRACION p   
+ 		on     	BO.TMCODE = P.tmcode  AND  BO.spcode = p.spcode 
+ 		left outer join 
+        		prepago_eleg e  on 
+        		p.planprepago = e.planprepago        
+ 		where  	BO.tmcode is not Null AND
+        BO.PLAN_BASICO = 1
+	</select>  
+<!--	<typeAlias alias="PO" type="co.com.comcel.vopo.productOffering" />			
+ 	<select id="DATA.getProductOffering" resultClass="PO">
+		SELECT * FROM (
+    		SELECT * FROM boffer a WHERE a.tmcode = 0
+    		UNION 
+    		SELECT DISTINCT b.* FROM boffer b, plan_paq_serv p 
+    		WHERE  b.tmcode = p.tmcode AND b.spcode = p.spcode
+   			AND    p.sncode =3013 AND b.plan_basico =1 ) d ORDER BY tmcode ASC         
+	</select>	-->
+	<typeAlias alias="Paq" type="co.com.comcel.vopo.paquetes" />
+	<select id="DATA.getPaquetes" resultClass= "Paq">
+		SELECT  * FROM  BOFFER WHERE TMCODE IS NULL AND TIPO_PAQ = 'BlackBerry' UNION
+        ALL SELECT * FROM  BOFFER WHERE TMCODE IS NULL AND TIPO_PAQ = 'Internet' UNION 
+        ALL SELECT * FROM  BOFFER WHERE TMCODE IS NULL AND TIPO_PAQ = 'SMS' UNION
+        ALL SELECT * FROM  BOFFER WHERE TMCODE IS NULL AND TIPO_PAQ = 'Videollamada'
+   	</select>
+   
+   	<typeAlias alias="PaqT" type="co.com.comcel.vopo.paquetes" />
+	<select id="DATA.getPaqTodos" resultClass= "PaqT">
+		SELECT  SPCODE, NOMBRE_PAQUETE AS DESC_BO, TIPO_PAQ  FROM PAQUETES_MIGRACION
+   	</select>
+   	
+	<typeAlias alias="Componentes" type="co.com.comcel.vopo.Componetes" />
+	<select id="DATA.getComponentes" resultClass= "Componentes">
+		SELECT DESCRIPCION, COMPONENT1, COMPONENT2, COMPONENT3, OBSERVACION, COD_COMPONENTE,
+		SEGMENTO, BLOQUEO, PRODUCT_SPEC, MAIN_COMP, ID_COMP SNCODE, COMPONENT4, PREP_MIN, PREP_MAX,
+		PREP_DEF, TYPE
+		FROM  COMPONENTES_BO order by cod_componente ASC 
+	</select>
+	
+	<select id="DATA.getComponentesAllow" resultClass= "Componentes">
+		select  DESCRIPCION, COMPONENT1, COMPONENT2, COMPONENT3, OBSERVACION, COD_COMPONENTE,
+		SEGMENTO, BLOQUEO, PRODUCT_SPEC, MAIN_COMP, ID_COMP SNCODE, COMPONENT4, PREP_MIN, PREP_MAX,
+		PREP_DEF, TYPE, a.* from allowance_comp a, componentes_bo c 
+		where	 a.cod_componente_pre = c.cod_componente 
+		order	 by c.cod_componente asc
+	</select>		
+	<typeAlias alias="Plan" type="co.com.comcel.vopo.planBasico" />
+	<select id="DATA.getConsultaPB" resultClass="Plan" parameterClass="Plan">
+		SELECT *  
+		FROM PLAN_PAQ_SERV
+		WHERE  TMCODE = '$tmcode$' and TIPO = 'B' and SNCODE = '$sncode$'
+	</select>
+	
+	<typeAlias alias="Plan2" type="co.com.comcel.vopo.planBasico" />
+	<select id="DATA.getConsultaPBMuchos" resultClass="Plan2" parameterClass="Plan2">
+		SELECT *  
+		FROM PLAN_PAQ_SERV
+		WHERE  SNCODE in('$sncode$) AND TMCODE = '$tmcode$' and TIPO = 'B'
+	</select>	
+	
+	<typeAlias alias="PlanBloq" type="co.com.comcel.vopo.POCodNum" />
+	<select id="DATA.getConsultaPA" resultClass="PlanBloq" parameterClass="java.lang.String">
+		SELECT *  
+		FROM PLAN_PAQ_SERV
+		WHERE  SNCODE = #VALUE# AND TIPO = 'B'		
+	</select>			
+	<typeAlias alias="Planpaq" type="co.com.comcel.vopo.POCodNum" />
+	<select id="DATA.getConsultaPaq1" resultClass="Planpaq" parameterClass="Planpaq">
+		SELECT *  
+		FROM PLAN_PAQ_SERV
+		WHERE  SPCODE = $spcode$ AND TMCODE = $tmcode$
+	</select>		
+	
+	<select id="DATA.getConsultaPaq" resultClass="Planpaq" parameterClass="Planpaq">
+		SELECT *  
+		FROM PLAN_PAQ_SERV
+		WHERE  SPCODE = $spcode$
+	</select>
+    
+    <typeAlias alias="BOCol" type="co.com.comcel.vopo.productOffering" />
+	<select id="DATA.getBOColumna" resultClass="BOCol">
+		SELECT  * FROM BOFFER WHERE 
+		TMCODE IS Null 
+	</select>
+	
+	<typeAlias alias="BO1" type="co.com.comcel.vopo.productOffering" />
+	<select id="DATA.getBO1" resultClass="BO1">		
+		SELECT bo.tmcode, bo.desc_bo, bo.spcode, p.tipoplan, bo.tipo_paq, bo.plan_basico,  
+		CASE  WHEN p.codigo_eleg IS NULL THEN '0'
+		ELSE p.codigo_eleg END AS  num_eleg, ATRMAP_TOPO 
+		FROM   BOFFER bo, planes_migracion p 
+		WHERE  bo.tmcode = p.tmcode and bo.TMCODE IS NOT NULL 
+		 and   bo.spcode = p.spcode
+	</select>
+	
+   <typeAlias alias="BO" type="co.com.comcel.vopo.productOffering" />
+     <select id="DATA.getBO" resultClass="BO">		
+		 select * from boffer f 
+         where  f.tmcode is not null            
+	</select>
+		
+	<typeAlias alias="DG" type="co.com.comcel.vopo.DatosGenerales" />
+	<select id="DATA.getDatosGenerales" resultClass="DG">		
+	   SELECT p.migracion,  BO.TMCODE, BO.DESC_BO, BO.spcode,p.effective_date, p.FECHA_INICIO,P.FECHA_VENTA, P.TIPOPLAN, dbms_lob.substr( p.descripcion, 4000, 1 )  as DESCRIPCIONT, P.DESCRIPCION1, P.DESCRIPCION2,
+               P.DESCRIPCION3, p.descripcion4, p.DESCRIPCION5,p.DESCRIPCION6, p.DESCRIPCION7,  P.Gama_Occ AS  GAMA_OCCIDENTE,
+               P.Gama_Cos AS GAMA_COSTA, P.Gama_Ori AS GAMA_ORIENTE, p.codigo_eleg AS caract_eleg, P.EQUIPO AS  DESC_EQUIPO, p.SUBTYPE,
+               P.TIPO_PLAN, P.caract_plan, e.elegidos_fnf, e.elegidos_bfnf, e.valor_onnet, e.valor_offnet, e.valor_fijo,
+               E.FFSMSMAXNUMELE_ON, E.FFSMSDUR,E.FFSMSDURTILLRE, E.FFSMSDAYNEXTNCH, E.FFVZMAXNUMELE_TD, E.FFVZDUR, 
+               E.FFVZDURTILLRE, E.FFVZDAYNEXTNCH, BFNFVDURTD, BFNFVDURTILLRE, BFNFVDAYNEXTNCH, PRODUCT_TYPE, OFER_VENTA, OFER_CAMBIOPLAN, VIGENTE, 
+               P.usingsimcardprepag,  P.usingsimcardprepag1, p.canalventa, p.zona         
+       FROM   BOFFER BO inner join  PLANES_MIGRACION p   
+       on     BO.TMCODE = P.tmcode  AND  BO.spcode = p.spcode 
+       left outer join prepago_eleg e  on 
+              p.planprepago = e.planprepago        
+       where  BO.tmcode is not Null AND
+              BO.PLAN_BASICO = 1  
+   </select>		
+ 
+	 <select id="DATA.existplanMaestra" resultClass="java.lang.String" >		
+		SELECT  to_char(tmcode) AS tmcode from boffer b 
+		WHERE b.plan_basico = 1 AND tmcode >= 0
+        MINUS 
+		SELECT DISTINCT tmcode AS tmcode  
+		FROM Plan_Paq_Serv  WHERE tmcode >= 0 	
+	 </select>	 
+	 
+	 <select id="DATA.existpaqMaestra" resultClass="java.lang.String" >		
+		SELECT distinct to_char(spcode) AS spcode FROM boffer s
+        WHERE s.tipo_paq is not null
+        MINUS 
+   		SELECT DISTINCT spcode AS spcode
+        FROM Plan_Paq_Serv  WHERE spcode >= 0
+	 </select>
+	 <select id="DATA.getNumBO" resultClass="java.lang.String" >		
+	  	select count(*) from planes_migracion_inc
+	 </select>
+	
+</sqlMap>
+
+
+	
+	
+	
